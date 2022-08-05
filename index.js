@@ -6,6 +6,8 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const event_functions = require("./utils/methods");
 const request = require("request");
+var Jwt = require('jsonwebtoken');
+
 
 
 let onlineUsers = [];
@@ -43,26 +45,34 @@ io.on('connection', (socket) => {
     });
 
     
-    socket.on('set name', ({name, socket_id})=>{
-        // console.log("name "+ name);
-        // console.log("socket_id "+ socket_id);
-        event_functions.addNewUser(name, socket_id);
-        console.log(onlineUsers)
-        var options = {
-            url: "http://34.214.207.222:80/api/users/search_student_by_name?name="+name,
-            headers: {
-              'access-token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InNhbWVlcnZhc2hpc2h0MzlAZ21haWwuY29tIiwiZXhwIjoxNjU0Njc4Mjg3fQ.WF2XWNgXvHldyudBzMz6-81NzxCxWAjeWMchrY0KUO8'
-            },
+    socket.on('set name', ({jwt, socket_id})=>{
+        console.log("jwt "+ jwt);
+        console.log("socket_id "+ socket_id);
+        Jwt.verify(jwt, '1234', function(err, decoded) {
+          socket.emit("auth_error", "JWT TOKEN is Invalid")
+          if(decoded){
+            event_functions.addNewUser(decoded.email, socket_id);
+            socket.emit("user_server_connected", `${decoded.email} is connected with expiry ${decoded.exp}`)
+          }
+        });
+         
+        // event_functions.addNewUser(jwt, socket_id);
+        // console.log(onlineUsers)
+        // var options = {
+        //     url: "http://34.214.207.222:80/api/users/search_student_by_name?name="+name,
+        //     headers: {
+        //       'access-token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJlbWFpbCI6InNhbWVlcnZhc2hpc2h0MzlAZ21haWwuY29tIiwiZXhwIjoxNjU0Njc4Mjg3fQ.WF2XWNgXvHldyudBzMz6-81NzxCxWAjeWMchrY0KUO8'
+        //     },
           
-          };
+        //   };
 
-        request.get(options, function(err, response, body) {
-            if (!err && response.statusCode == 200) {
-                var locals = JSON.parse(body);
-                console.log(locals);
-                socket.emit("set_user", locals);
-            }
-        })
+        // request.get(options, function(err, response, body) {
+        //     if (!err && response.statusCode == 200) {
+        //         var locals = JSON.parse(body);
+        //         console.log(locals);
+        //         socket.emit("set_user", locals);
+        //     }
+        // })
 
     });
 
