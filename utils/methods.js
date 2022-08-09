@@ -43,9 +43,14 @@ const addNewUser = (username, socketId) => {
     return onlineUsers.find((user) => user.username === username);
   };
 
+  const getUserBySocketId = (socketId) => {
+    return onlineUsers.find((user) => user.socketId === socketId);
+  };
+
 
 module.exports={
     addNewUser,
     removeUser,
-    getUser
+    getUser,
+    getUserBySocketId
 }

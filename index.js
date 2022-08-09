@@ -5,10 +5,11 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const event_functions = require("./utils/methods");
-const request = require("request");
-var Jwt = require('jsonwebtoken');
 
-
+const {connectionFunction} = require("./socket_controllers/socket.connections");
+const {disconnectionFunction} = require("./socket_controllers/socket.disconnection");
+const { authenticateFunction } = require('./socket_controllers/socket.authenticate');
+const {sendNotification} = require('./socket_controllers/socket.sendNotification');
 
 let onlineUsers = [];
 
@@ -26,14 +27,14 @@ let onlineUsers = [];
 //   const getUser = (username) => {
 //     return onlineUsers.find((user) => user.username === username);
 //   };
-  
+
+
 io.on('connection', (socket) => {
-    console.log('a user connected');
-    socket.emit('hello', new Date())
+    
+    connectionFunction(socket);
 
     socket.on('disconnect', () => {
-      event_functions.removeUser();
-      console.log('user disconnected');
+      disconnectionFunction();
     });
 
     socket.on('chat message', (message)=>{
@@ -46,16 +47,8 @@ io.on('connection', (socket) => {
 
     
     socket.on('set name', ({jwt, socket_id})=>{
-        console.log("jwt "+ jwt);
-        console.log("socket_id "+ socket_id);
-        Jwt.verify(jwt, '1234', function(err, decoded) {
-          socket.emit("auth_error", "JWT TOKEN is Invalid")
-          if(decoded){
-            event_functions.addNewUser(decoded.email, socket_id);
-            socket.emit("user_server_connected", `${decoded.email} is connected with expiry ${decoded.exp}`)
-          }
-        });
-         
+        
+        authenticateFunction({jwt, socket_id, socket});
         // event_functions.addNewUser(jwt, socket_id);
         // console.log(onlineUsers)
         // var options = {
@@ -77,14 +70,7 @@ io.on('connection', (socket) => {
     });
 
   socket.on("send_notification",(data)=>{
-      console.log(data);
-      let send_to_user=event_functions.getUser(data.send_to);
-      console.log("send to ", send_to_user);
-      // if user exist in redis
-      if(send_to_user){
-          // console.log("here senf to user "+ send_to_user.socketId);
-          socket.to(send_to_user.socketId).emit("getnotified",data.notification);
-      }
+      sendNotification({...data,socket});
   })
 });
 

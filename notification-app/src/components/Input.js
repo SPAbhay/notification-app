@@ -17,6 +17,12 @@ export default function Input(props) {
           return {...prevValue, OTP:value}
         })
       }
+
+      else if(name == "chat"){
+        setLoginDetails((prevValue)=>{
+          return {...prevValue, chat:value}
+        })
+      }
     }}></input>
   )
 }
