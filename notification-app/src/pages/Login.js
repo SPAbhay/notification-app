@@ -6,7 +6,7 @@ import { live, endpoints,socket } from '../config'
 
 export default function Login(props) {
   const {loginStatus} = props
-  const [loginDetails, setLoginDetails] = useState({"email":"", "OTP":""})
+  const [loginDetails, setLoginDetails] = useState({"email":"sameervashisht39@gmail.com", "OTP":"1111"})
 
 
   function handleClick(){

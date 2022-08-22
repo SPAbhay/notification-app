@@ -18,6 +18,9 @@ export default function ChatPage() {
         console.log("chat sent");
     }); 
 
+
+    
+
   return (
     <div>
         

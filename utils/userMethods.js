@@ -4,16 +4,17 @@ let onlineUsers;
 
 redis_method.getValue("onlineUsers").then((data)=>{
     if (!data){
-        console.log("here redis");
         redis_method.setKey("onlineUsers", JSON.stringify([]));
         onlineUsers=[];
     }else{
         onlineUsers = JSON.parse(data);
-        console.log(onlineUsers);
     }
-    
 });
 
+const get_all_users =async ()=>{
+  onlineUsers = JSON.parse(await redis_method.getValue("onlineUsers"));
+  return onlineUsers;
+}
 
 // methods
 const addNewUser = (username, socketId) => {
@@ -28,14 +29,12 @@ const addNewUser = (username, socketId) => {
       if(!beenThere){
       onlineUsers.push({ username, socketId });
       }
-    // !onlineUsers.some((user) => user.username === username) &&
-    //   onlineUsers.push({ username, socketId });
+    
       redis_method.setKey("onlineUsers", JSON.stringify(onlineUsers));
   };
   
-  const removeUser = (socketId) => {
-    onlineUsers = onlineUsers.filter((user) => user.socketId !== socketId);
-    // console.log(onlineUsers)
+  const removeUserByEmail = (email) => {
+    onlineUsers = onlineUsers.filter((user) => user.username !== email);
     redis_method.setKey("onlineUsers", JSON.stringify(onlineUsers));
   };
   
@@ -50,7 +49,8 @@ const addNewUser = (username, socketId) => {
 
 module.exports={
     addNewUser,
-    removeUser,
+    removeUserByEmail,
     getUser,
-    getUserBySocketId
+    getUserBySocketId,
+    get_all_users
 }
